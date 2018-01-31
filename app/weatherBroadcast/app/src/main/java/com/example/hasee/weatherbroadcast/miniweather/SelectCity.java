@@ -43,7 +43,7 @@ public class SelectCity extends Activity implements AdapterView.OnItemSelectedLi
     private String cityName;
     private DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
     private SQLiteDatabase database;    //用于创建数据库对象
-    private boolean flag=false;
+    private boolean flag;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +97,7 @@ public class SelectCity extends Activity implements AdapterView.OnItemSelectedLi
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         int tag=(Integer) parent.getTag();
+       // Log.d("test",tag+"");
         switch (tag){
             case 1:
                 chooseProvine();
@@ -108,14 +109,14 @@ public class SelectCity extends Activity implements AdapterView.OnItemSelectedLi
 
     }
     public void chooseProvine(){
-        database = dbHelper.getWritableDatabase();//创建数据库对象
+        database = dbHelper.getWritableDatabase();  //创建数据库对象
         Cursor cursor=null;
 
         /*
             实现功能：选择城市时，下拉框默认值为主页面所选的省份和城市
          */
         String defCity="";
-        if(!flag&&!"".equals(getIntent().getStringExtra("keycode"))){       //设置省份默认值，此页面中只执行一次
+        if(!flag&&!"".equals(getIntent().getStringExtra("keycode"))){          //设置省份默认值，此页面中只执行一次
             cursor=dbHelper.QueryByCode(database,getIntent().getStringExtra("keycode"));
             if (cursor.moveToFirst()) {
                 int pos=adapter1.getPosition(cursor.getString(cursor.getColumnIndex(City.KEY_PROVINCE)));   //得到一个省在下拉框中的位置
@@ -133,17 +134,12 @@ public class SelectCity extends Activity implements AdapterView.OnItemSelectedLi
         citys.clear();      //清空原有城市数据
         codes.clear();      //清空原有相应的城市代码
         addCitysAndCodes(cursor);
-        spinner2.setAdapter(adapter2);  //重新设置一次适配器
-
+        adapter2.notifyDataSetChanged();                       //通知spinner刷新数据 ***** 很必要
         if(!flag&&!"".equals(getIntent().getStringExtra("keycode"))){       //设置城市默认值，此页面中只执行一次
-            Log.d("test",adapter2.getPosition(defCity)+"");
             int pos=adapter2.getPosition(defCity);      //得到defCity这个城市在下拉框中的位置
-            adapter2.notifyDataSetChanged();             //通知spinner刷新数据
-            spinner2.setSelection(pos);                    //设置spinner2下拉框默认值
-            Log.d("test",spinner2.getSelectedItem()+"");
+            spinner2.setSelection(pos);             //设置spinner2下拉框默认值
             flag=true;
         }
-
         database.close();
     }
     @Override
